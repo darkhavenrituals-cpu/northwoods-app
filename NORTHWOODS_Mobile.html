@@ -1,0 +1,2094 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#050403">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="NORTHWOODS">
+<meta name="description" content="NORTHWOODS AI Portal — Mobile Command Interface">
+<title>NORTHWOODS</title>
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22NORTHWOODS+AI%22%2C%22short_name%22%3A%22NORTHWOODS%22%2C%22description%22%3A%22NORTHWOODS+AI+Portal%22%2C%22start_url%22%3A%22.%2FNORTHWOODS_Mobile.html%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23050403%22%2C%22theme_color%22%3A%22%23050403%22%2C%22orientation%22%3A%22portrait%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg+xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'+viewBox%3D'0+0+192+192'%253E%253Cpolygon+points%3D'96%2C8+184%2C56+184%2C136+96%2C184+8%2C136+8%2C56'+fill%3D'%23050403'+stroke%3D'%23d4af37'+stroke-width%3D'8'%2F%253E%253Ctext+x%3D'96'+y%3D'110'+text-anchor%3D'middle'+font-size%3D'64'+fill%3D'%23d4af37'%253ENW%253C%2Ftext%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<style>
+:root {
+  --bg-void: #050403;
+  --bg-deep: #0a0805;
+  --bg-panel: rgba(10, 8, 5, 0.75);
+  --bg-glass: rgba(15, 12, 8, 0.6);
+  --gold: #d4af37;
+  --gold-dim: #8a7020;
+  --gold-glow: rgba(212, 175, 55, 0.4);
+  --gold-glow-strong: rgba(212, 175, 55, 0.7);
+  --teal: #4ECCA3;
+  --teal-dim: #2a7a62;
+  --teal-glow: rgba(78, 204, 163, 0.35);
+  --crimson: #c0392b;
+  --text-primary: #f0e6c8;
+  --text-dim: #8a7a5a;
+  --text-teal: #4ECCA3;
+  --border-gold: 1px solid rgba(212, 175, 55, 0.3);
+  --border-teal: 1px solid rgba(78, 204, 163, 0.3);
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --font-display: 'Cinzel', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --nav-height: 72px;
+}
+
+/* ─── MANUAL TAB ─────────────────────────────────────────── */
+.man-section {
+  margin-bottom: 8px;
+  border: 1px solid rgba(0,255,157,0.15);
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(0,255,157,0.02);
+}
+.man-hdr {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 13px 16px;
+  cursor: pointer;
+  color: #00ff9d;
+  font-family: monospace;
+  font-size: 12px;
+  letter-spacing: 2px;
+  background: rgba(0,255,157,0.06);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.man-hdr:active { background: rgba(0,255,157,0.12); }
+.man-arrow { font-size: 10px; transition: transform 0.25s; }
+.man-section.open .man-arrow { transform: rotate(180deg); }
+.man-body {
+  display: none;
+  padding: 14px 16px 16px;
+  color: #bbb;
+  font-family: monospace;
+  font-size: 12.5px;
+  line-height: 1.65;
+}
+.man-body p { margin-bottom: 10px; }
+.man-section.open .man-body { display: block; }
+.man-sub {
+  color: #00ff9d;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  margin: 14px 0 6px;
+  opacity: 0.8;
+}
+.man-code {
+  background: rgba(0,255,157,0.08);
+  border: 1px solid rgba(0,255,157,0.25);
+  border-radius: 3px;
+  padding: 1px 6px;
+  font-family: monospace;
+  font-size: 11px;
+  color: #00ff9d;
+  word-break: break-all;
+}
+.man-block {
+  background: rgba(0,0,0,0.4);
+  border-left: 2px solid #00ff9d;
+  border-radius: 4px;
+  padding: 10px 12px;
+  font-family: monospace;
+  font-size: 11px;
+  color: #aef5d8;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 8px 0 10px;
+}
+.man-list { padding-left: 18px; margin-bottom: 10px; }
+.man-list li { margin-bottom: 5px; }
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { height: 100%; overflow: hidden; }
+body {
+  background: var(--bg-void);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  height: 100%;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+  overscroll-behavior: none;
+}
+</style>
+<style>
+/* ─── LAYOUT ─────────────────────────────────────────────── */
+#app {
+  position: fixed; inset: 0;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+#bg-canvas {
+  position: fixed; inset: 0;
+  z-index: 0; pointer-events: none;
+}
+#content-area {
+  flex: 1; overflow: hidden;
+  position: relative; z-index: 1;
+}
+.tab-panel {
+  position: absolute; inset: 0;
+  overflow-y: auto; overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 12px);
+  opacity: 0; transform: translateY(16px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  pointer-events: none;
+  display: none;
+}
+.tab-panel.active {
+  opacity: 1; transform: translateY(0);
+  pointer-events: all; display: block;
+}
+/* ─── BOTTOM NAV ──────────────────────────────────────────── */
+#bottom-nav {
+  position: relative; z-index: 100;
+  background: rgba(5, 4, 3, 0.92);
+  backdrop-filter: blur(24px);
+  border-top: var(--border-gold);
+  display: flex; align-items: stretch;
+  height: calc(var(--nav-height) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+  box-shadow: 0 -4px 30px rgba(212, 175, 55, 0.08);
+}
+.nav-btn {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 3px; padding: 8px 4px;
+  background: none; border: none; cursor: pointer;
+  color: var(--text-dim); transition: all 0.2s ease;
+  min-height: 44px; position: relative;
+  font-family: var(--font-mono);
+}
+.nav-btn .nav-icon {
+  font-size: 18px; line-height: 1;
+  transition: all 0.25s ease;
+}
+.nav-btn .nav-label {
+  font-size: 9px; letter-spacing: 0.1em;
+  text-transform: uppercase; font-weight: 500;
+  transition: all 0.25s ease;
+}
+.nav-btn.active { color: var(--gold); }
+.nav-btn.active .nav-icon {
+  text-shadow: 0 0 12px var(--gold-glow-strong), 0 0 24px var(--gold-glow);
+  transform: scale(1.15) translateY(-2px);
+}
+.nav-btn.active::after {
+  content: ''; position: absolute; top: 0; left: 20%; right: 20%;
+  height: 2px; background: var(--gold);
+  box-shadow: 0 0 8px var(--gold-glow-strong);
+  border-radius: 0 0 2px 2px;
+}
+</style>
+<style>
+/* ─── GLASSMORPHISM CARDS ─────────────────────────────────── */
+.glass-card {
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  border: var(--border-gold);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  position: relative; overflow: hidden;
+}
+.glass-card::before {
+  content: ''; position: absolute;
+  top: 0; left: -100%; width: 100%; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  animation: scan-line 6s linear infinite;
+}
+@keyframes scan-line {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+.glass-card.teal-border { border-color: rgba(78, 204, 163, 0.3); }
+.glass-card.teal-border::before {
+  background: linear-gradient(90deg, transparent, var(--teal), transparent);
+}
+/* ─── HEXAGON LOGO ────────────────────────────────────────── */
+.hex-logo-wrap {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 28px 0 12px;
+}
+.hex-logo {
+  width: 88px; height: 88px;
+  position: relative;
+  animation: hex-breathe 3.5s ease-in-out infinite;
+}
+@keyframes hex-breathe {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 8px var(--gold-glow)); }
+  50% { transform: scale(1.06); filter: drop-shadow(0 0 22px var(--gold-glow-strong)); }
+}
+.hex-logo svg { width: 100%; height: 100%; }
+.wordmark {
+  font-family: var(--font-display);
+  font-size: 22px; font-weight: 900;
+  letter-spacing: 0.25em;
+  color: var(--gold);
+  text-shadow: 0 0 20px var(--gold-glow);
+  margin-top: 8px;
+}
+.tagline {
+  font-size: 9px; letter-spacing: 0.3em;
+  color: var(--text-dim); margin-top: 4px;
+  text-transform: uppercase;
+}
+/* ─── STATUS RING ─────────────────────────────────────────── */
+.status-ring-wrap {
+  display: flex; gap: 10px;
+  padding: 0 16px 12px;
+  justify-content: center;
+}
+.status-pill {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 20px;
+  font-size: 10px; letter-spacing: 0.08em;
+  border: 1px solid rgba(212,175,55,0.2);
+  background: rgba(5,4,3,0.5);
+}
+.status-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--text-dim);
+}
+.status-dot.online {
+  background: var(--teal);
+  box-shadow: 0 0 6px var(--teal-glow);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+.status-dot.offline { background: var(--crimson); }
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+</style>
+<style>
+/* ─── STATS GRID ──────────────────────────────────────────── */
+.stats-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; padding: 0 16px 12px;
+}
+.stat-card {
+  background: rgba(10,8,5,0.7);
+  border: var(--border-gold);
+  border-radius: var(--radius-sm);
+  padding: 12px; text-align: center;
+  position: relative; overflow: hidden;
+}
+.stat-value {
+  font-size: 28px; font-weight: 700;
+  color: var(--gold); line-height: 1;
+  text-shadow: 0 0 12px var(--gold-glow);
+}
+.stat-label {
+  font-size: 9px; color: var(--text-dim);
+  letter-spacing: 0.15em; margin-top: 4px;
+  text-transform: uppercase;
+}
+/* ─── QUICK ACTIONS ───────────────────────────────────────── */
+.quick-actions {
+  display: flex; gap: 10px;
+  padding: 0 16px 12px;
+}
+.qa-btn {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; gap: 6px;
+  padding: 14px 8px;
+  background: rgba(212, 175, 55, 0.06);
+  border: var(--border-gold); border-radius: var(--radius-md);
+  color: var(--gold); cursor: pointer; font-family: var(--font-mono);
+  font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
+  transition: all 0.2s ease; min-height: 44px;
+}
+.qa-btn .qa-icon { font-size: 20px; }
+.qa-btn:active {
+  background: rgba(212, 175, 55, 0.15);
+  box-shadow: 0 0 16px var(--gold-glow);
+  transform: scale(0.96);
+}
+/* ─── ORACLE CHAT ─────────────────────────────────────────── */
+#panel-oracle {
+  display: flex; flex-direction: column;
+  padding-bottom: 0;
+}
+.oracle-header {
+  padding: 12px 16px 8px;
+  border-bottom: var(--border-gold);
+  background: rgba(5,4,3,0.85);
+  backdrop-filter: blur(16px);
+  position: sticky; top: 0; z-index: 10;
+  flex-shrink: 0;
+}
+.model-selector-row {
+  display: flex; gap: 6px; align-items: center;
+  overflow-x: auto; padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.model-selector-row::-webkit-scrollbar { display: none; }
+.model-chip {
+  white-space: nowrap; padding: 5px 10px;
+  border-radius: 20px; font-size: 10px;
+  border: 1px solid rgba(212,175,55,0.25);
+  background: transparent; color: var(--text-dim);
+  cursor: pointer; font-family: var(--font-mono);
+  transition: all 0.2s; min-height: 28px;
+}
+.model-chip.active {
+  border-color: var(--gold); color: var(--gold);
+  background: rgba(212,175,55,0.1);
+}
+.preset-row {
+  display: flex; gap: 5px; margin-top: 6px;
+  overflow-x: auto; scrollbar-width: none;
+}
+.preset-row::-webkit-scrollbar { display: none; }
+.preset-chip {
+  white-space: nowrap; padding: 4px 8px;
+  border-radius: 4px; font-size: 9px;
+  border: var(--border-teal);
+  background: transparent; color: var(--text-dim);
+  cursor: pointer; font-family: var(--font-mono);
+  transition: all 0.2s; min-height: 24px;
+  letter-spacing: 0.05em;
+}
+.preset-chip.active { color: var(--teal); border-color: var(--teal); background: rgba(78,204,163,0.08); }
+</style>
+<style>
+/* ─── CHAT MESSAGES ───────────────────────────────────────── */
+#chat-messages {
+  flex: 1; overflow-y: auto;
+  padding: 12px 16px;
+  display: flex; flex-direction: column; gap: 12px;
+  -webkit-overflow-scrolling: touch;
+}
+.msg {
+  display: flex; gap: 8px; max-width: 88%;
+  animation: msg-in 0.3s ease forwards;
+}
+@keyframes msg-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.msg.user { align-self: flex-end; flex-direction: row-reverse; }
+.msg.assistant { align-self: flex-start; }
+.msg-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; flex-shrink: 0; margin-top: 2px;
+}
+.msg.assistant .msg-avatar {
+  background: rgba(212,175,55,0.15);
+  border: 1px solid rgba(212,175,55,0.4);
+  color: var(--gold);
+}
+.msg.user .msg-avatar {
+  background: rgba(78,204,163,0.15);
+  border: 1px solid rgba(78,204,163,0.4);
+  color: var(--teal);
+}
+.msg-bubble {
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 13px; line-height: 1.6;
+}
+.msg.assistant .msg-bubble {
+  background: rgba(15,12,8,0.85);
+  border: var(--border-gold);
+  color: var(--text-primary);
+}
+.msg.user .msg-bubble {
+  background: rgba(78,204,163,0.1);
+  border: var(--border-teal);
+  color: var(--text-teal);
+}
+.msg-bubble pre {
+  margin: 8px 0; border-radius: 6px; overflow-x: auto;
+  font-size: 11px;
+}
+.msg-bubble code:not(pre code) {
+  background: rgba(212,175,55,0.1);
+  padding: 1px 4px; border-radius: 3px;
+  color: var(--gold); font-size: 12px;
+}
+.typing-cursor::after {
+  content: '▋'; animation: blink 1s step-end infinite;
+  color: var(--teal);
+}
+@keyframes blink { 50% { opacity: 0; } }
+/* ─── CHAT INPUT ──────────────────────────────────────────── */
+.chat-input-row {
+  display: flex; align-items: flex-end; gap: 8px;
+  padding: 10px 16px;
+  padding-bottom: calc(10px + var(--safe-bottom));
+  background: rgba(5,4,3,0.92);
+  backdrop-filter: blur(16px);
+  border-top: var(--border-gold);
+  flex-shrink: 0;
+}
+#chat-input {
+  flex: 1; min-height: 40px; max-height: 120px;
+  background: rgba(15,12,8,0.7);
+  border: var(--border-gold); border-radius: var(--radius-sm);
+  padding: 10px 12px; color: var(--text-primary);
+  font-family: var(--font-mono); font-size: 13px;
+  resize: none; outline: none; line-height: 1.4;
+  user-select: text;
+}
+#chat-input::placeholder { color: var(--text-dim); }
+#chat-input:focus { border-color: rgba(212,175,55,0.6); }
+.chat-btn {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: none; cursor: pointer; font-size: 16px;
+  transition: all 0.2s; flex-shrink: 0;
+}
+#btn-send {
+  background: var(--gold);
+  color: var(--bg-void);
+  box-shadow: 0 0 12px var(--gold-glow);
+}
+#btn-send:active { transform: scale(0.9); }
+#btn-voice {
+  background: rgba(78,204,163,0.1);
+  border: var(--border-teal); color: var(--teal);
+}
+#btn-voice.listening {
+  background: rgba(78,204,163,0.25);
+  box-shadow: 0 0 16px var(--teal-glow);
+  animation: voice-pulse 1s ease-in-out infinite;
+}
+@keyframes voice-pulse {
+  0%,100% { box-shadow: 0 0 8px var(--teal-glow); }
+  50% { box-shadow: 0 0 20px rgba(78,204,163,0.6); }
+}
+</style>
+<style>
+/* ─── GRAPH TAB ───────────────────────────────────────────── */
+#panel-graph {
+  padding: 0; display: flex; flex-direction: column;
+}
+.graph-header {
+  padding: 12px 16px 8px;
+  border-bottom: var(--border-gold);
+  background: rgba(5,4,3,0.9);
+  backdrop-filter: blur(16px);
+  z-index: 5;
+}
+.graph-header h2 {
+  font-family: var(--font-display);
+  font-size: 14px; color: var(--gold);
+  letter-spacing: 0.15em;
+}
+#d3-container {
+  flex: 1; width: 100%;
+  height: calc(100vh - var(--nav-height) - 50px);
+  position: relative; overflow: hidden;
+  touch-action: none;
+}
+#d3-svg { width: 100%; height: 100%; cursor: grab; }
+#d3-svg:active { cursor: grabbing; }
+.graph-node-label {
+  font-family: var(--font-mono);
+  font-size: 10px; fill: var(--text-primary);
+  pointer-events: none;
+  text-shadow: 0 0 4px rgba(5,4,3,0.9);
+}
+.node-tooltip {
+  position: absolute; z-index: 20;
+  background: rgba(10,8,5,0.95);
+  border: var(--border-gold);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px; font-size: 11px;
+  max-width: 200px; pointer-events: none;
+  display: none;
+}
+/* ─── DATA TAB ────────────────────────────────────────────── */
+.data-section { padding: 12px 16px 4px; }
+.data-section h3 {
+  font-family: var(--font-display);
+  font-size: 12px; color: var(--gold);
+  letter-spacing: 0.2em; margin-bottom: 10px;
+  text-transform: uppercase;
+  display: flex; align-items: center; gap: 8px;
+}
+.data-section h3::before {
+  content: ''; display: block;
+  width: 16px; height: 1px; background: var(--gold);
+  box-shadow: 0 0 4px var(--gold-glow);
+}
+.task-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  background: rgba(10,8,5,0.6);
+  border: 1px solid rgba(212,175,55,0.12);
+  border-radius: var(--radius-sm);
+  margin-bottom: 6px; cursor: pointer;
+  transition: all 0.2s;
+  min-height: 44px; user-select: text;
+}
+.task-item:active { background: rgba(212,175,55,0.08); }
+.task-check {
+  width: 18px; height: 18px; border-radius: 3px;
+  border: 1px solid rgba(212,175,55,0.4);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 10px; color: var(--gold);
+}
+.task-check.done { background: rgba(212,175,55,0.15); }
+.task-text { font-size: 12px; flex: 1; }
+.task-text.done { text-decoration: line-through; color: var(--text-dim); }
+.add-item-row {
+  display: flex; gap: 8px; padding: 8px 16px 0;
+}
+.add-input {
+  flex: 1; height: 36px; padding: 0 10px;
+  background: rgba(10,8,5,0.7);
+  border: var(--border-gold); border-radius: var(--radius-sm);
+  color: var(--text-primary); font-family: var(--font-mono);
+  font-size: 12px; outline: none; user-select: text;
+}
+.add-input::placeholder { color: var(--text-dim); }
+.add-btn {
+  height: 36px; padding: 0 12px;
+  background: rgba(212,175,55,0.1);
+  border: var(--border-gold); border-radius: var(--radius-sm);
+  color: var(--gold); cursor: pointer;
+  font-family: var(--font-mono); font-size: 12px;
+  transition: all 0.2s;
+}
+.add-btn:active { background: rgba(212,175,55,0.2); }
+</style>
+<style>
+/* ─── CONFIG TAB ──────────────────────────────────────────── */
+.config-section { padding: 12px 16px; }
+.config-section h3 {
+  font-family: var(--font-display);
+  font-size: 11px; color: var(--gold);
+  letter-spacing: 0.2em; margin-bottom: 10px;
+  text-transform: uppercase; opacity: 0.8;
+}
+.config-field { margin-bottom: 10px; }
+.config-label {
+  font-size: 9px; color: var(--text-dim);
+  letter-spacing: 0.15em; text-transform: uppercase;
+  margin-bottom: 5px; display: block;
+}
+.config-input {
+  width: 100%; height: 40px; padding: 0 12px;
+  background: rgba(10,8,5,0.7);
+  border: var(--border-gold); border-radius: var(--radius-sm);
+  color: var(--text-primary); font-family: var(--font-mono);
+  font-size: 12px; outline: none; user-select: text;
+}
+.config-input:focus { border-color: rgba(212,175,55,0.6); }
+.config-input::placeholder { color: var(--text-dim); }
+.config-divider {
+  height: 1px; background: rgba(212,175,55,0.1);
+  margin: 4px 16px;
+}
+.config-action-btn {
+  width: 100%; height: 44px;
+  background: rgba(212,175,55,0.06);
+  border: var(--border-gold); border-radius: var(--radius-sm);
+  color: var(--gold); cursor: pointer;
+  font-family: var(--font-mono); font-size: 12px;
+  letter-spacing: 0.1em; transition: all 0.2s;
+  margin-bottom: 8px;
+}
+.config-action-btn:active { background: rgba(212,175,55,0.15); }
+.config-action-btn.danger {
+  border-color: rgba(192,57,43,0.4); color: var(--crimson);
+  background: rgba(192,57,43,0.06);
+}
+.config-action-btn.danger:active { background: rgba(192,57,43,0.15); }
+.install-cta {
+  background: linear-gradient(135deg, rgba(212,175,55,0.15), rgba(78,204,163,0.1));
+  border: 1px solid rgba(212,175,55,0.4);
+  border-radius: var(--radius-md);
+  padding: 16px; margin: 0 16px 12px;
+  text-align: center;
+}
+.install-cta-title {
+  font-family: var(--font-display);
+  font-size: 13px; color: var(--gold); margin-bottom: 6px;
+  letter-spacing: 0.1em;
+}
+.install-cta-sub {
+  font-size: 11px; color: var(--text-dim); margin-bottom: 10px;
+}
+/* ─── MISC UTILS ──────────────────────────────────────────── */
+.panel-title-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px 6px;
+}
+.panel-title {
+  font-family: var(--font-display);
+  font-size: 15px; color: var(--gold);
+  letter-spacing: 0.2em;
+}
+.panel-sub {
+  font-size: 9px; color: var(--text-dim);
+  letter-spacing: 0.1em; text-transform: uppercase;
+}
+.icon-btn {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(212,175,55,0.08);
+  border: var(--border-gold); color: var(--gold);
+  cursor: pointer; font-size: 14px;
+  transition: all 0.2s; flex-shrink: 0; min-height: 32px;
+}
+.icon-btn:active { background: rgba(212,175,55,0.2); }
+.shimmer {
+  background: linear-gradient(90deg,
+    rgba(212,175,55,0) 0%, rgba(212,175,55,0.08) 50%, rgba(212,175,55,0) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2.5s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.scrollable { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(212,175,55,0.25); border-radius: 2px; }
+.tag {
+  display: inline-block; padding: 2px 6px;
+  border-radius: 3px; font-size: 9px;
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+.tag-gold { background: rgba(212,175,55,0.15); color: var(--gold); border: 1px solid rgba(212,175,55,0.3); }
+.tag-teal { background: rgba(78,204,163,0.12); color: var(--teal); border: 1px solid rgba(78,204,163,0.3); }
+.tag-dim { background: rgba(255,255,255,0.05); color: var(--text-dim); border: 1px solid rgba(255,255,255,0.1); }
+</style>
+</head>
+<body>
+<div id="app">
+  <canvas id="bg-canvas"></canvas>
+  <div id="content-area">
+
+    <!-- ══════════════════════════════════ NEXUS TAB ══ -->
+    <div id="panel-nexus" class="tab-panel active">
+      <div class="hex-logo-wrap">
+        <div class="hex-logo">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="50,3 97,27.5 97,72.5 50,97 3,72.5 3,27.5"
+              fill="rgba(5,4,3,0.8)" stroke="#d4af37" stroke-width="2"/>
+            <polygon points="50,12 88,33 88,67 50,88 12,67 12,33"
+              fill="none" stroke="rgba(212,175,55,0.3)" stroke-width="1"/>
+            <text x="50" y="56" text-anchor="middle" dominant-baseline="middle"
+              font-family="Cinzel,serif" font-size="18" font-weight="900" fill="#d4af37"
+              style="text-shadow:0 0 10px rgba(212,175,55,0.8)">NW</text>
+            <circle cx="50" cy="50" r="30" fill="none"
+              stroke="rgba(212,175,55,0.15)" stroke-width="0.5"
+              stroke-dasharray="4 6"/>
+          </svg>
+        </div>
+        <div class="wordmark">NORTHWOODS</div>
+        <div class="tagline">AI COMMAND INTERFACE v3.0</div>
+      </div>
+
+      <div class="status-ring-wrap">
+        <div class="status-pill">
+          <div class="status-dot" id="dot-ollama"></div>
+          <span id="label-ollama" style="font-size:10px">HERMES</span>
+        </div>
+        <div class="status-pill">
+          <div class="status-dot" id="dot-groq"></div>
+          <span style="font-size:10px">GROQ</span>
+        </div>
+        <div class="status-pill">
+          <div class="status-dot" id="dot-claude"></div>
+          <span style="font-size:10px">CLAUDE</span>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card shimmer">
+          <div class="stat-value" id="stat-tasks">—</div>
+          <div class="stat-label">Tasks</div>
+        </div>
+        <div class="stat-card shimmer">
+          <div class="stat-value" id="stat-goals">—</div>
+          <div class="stat-label">Goals</div>
+        </div>
+        <div class="stat-card shimmer">
+          <div class="stat-value" id="stat-notes">—</div>
+          <div class="stat-label">Vault Notes</div>
+        </div>
+        <div class="stat-card shimmer">
+          <div class="stat-value" id="stat-msgs">—</div>
+          <div class="stat-label">Messages</div>
+        </div>
+      </div>
+
+      <div class="quick-actions">
+        <button class="qa-btn" onclick="switchTab('oracle')">
+          <span class="qa-icon">◈</span><span>NEW CHAT</span>
+        </button>
+        <button class="qa-btn" onclick="startVoice()">
+          <span class="qa-icon">🎙</span><span>VOICE</span>
+        </button>
+        <button class="qa-btn" onclick="switchTab('graph')">
+          <span class="qa-icon">◉</span><span>GRAPH</span>
+        </button>
+      </div>
+
+      <div style="padding:0 16px 12px">
+        <div class="glass-card">
+          <div style="font-size:10px;color:var(--text-dim);letter-spacing:0.1em;margin-bottom:8px">SYSTEM LOG</div>
+          <div id="nexus-log" style="font-size:11px;color:var(--teal);line-height:1.8;min-height:60px">
+            <div>> NORTHWOODS initialized</div>
+            <div>> Scanning neural pathways...</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding:0 16px 16px">
+        <div class="glass-card teal-border">
+          <div style="font-size:9px;color:var(--text-dim);letter-spacing:0.15em;margin-bottom:8px;text-transform:uppercase">ACTIVE MODEL</div>
+          <div id="active-model-display" style="font-size:14px;color:var(--gold);font-family:var(--font-display);letter-spacing:0.1em">—</div>
+          <div id="active-model-sub" style="font-size:9px;color:var(--text-dim);margin-top:4px">Select a model in Oracle tab</div>
+        </div>
+      </div>
+    </div><!-- /nexus -->
+
+    <!-- ══════════════════════════════════ ORACLE TAB ══ -->
+    <div id="panel-oracle" class="tab-panel" style="display:flex;flex-direction:column;height:100%">
+      <div class="oracle-header">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <div style="font-family:var(--font-display);font-size:13px;color:var(--gold);letter-spacing:0.2em">ORACLE</div>
+          <div style="display:flex;gap:6px">
+            <button class="icon-btn" onclick="exportChat()" title="Export">⬇</button>
+            <button class="icon-btn" onclick="clearChat()" title="Clear">✕</button>
+          </div>
+        </div>
+        <div class="model-selector-row" id="model-chips">
+          <button class="model-chip active" data-model="ollama:hermes3" onclick="selectModel(this)">⬡ Hermes3</button>
+          <button class="model-chip" data-model="groq:llama-3.3-70b-versatile" onclick="selectModel(this)">◈ Llama3-70B</button>
+          <button class="model-chip" data-model="groq:mixtral-8x7b-32768" onclick="selectModel(this)">◈ Mixtral</button>
+          <button class="model-chip" data-model="groq:gemma2-9b-it" onclick="selectModel(this)">◈ Gemma2</button>
+          <button class="model-chip" data-model="claude:claude-haiku-4-5-20251001" onclick="selectModel(this)">▲ Haiku</button>
+          <button class="model-chip" data-model="claude:claude-sonnet-4-6" onclick="selectModel(this)">▲ Sonnet</button>
+        </div>
+        <div class="preset-row" id="preset-chips">
+          <button class="preset-chip active" data-preset="saia" onclick="selectPreset(this)">◉ SAIA</button>
+          <button class="preset-chip" data-preset="code" onclick="selectPreset(this)">{ } Code</button>
+          <button class="preset-chip" data-preset="creative" onclick="selectPreset(this)">✦ Creative</button>
+          <button class="preset-chip" data-preset="concise" onclick="selectPreset(this)">→ Concise</button>
+          <button class="preset-chip" data-preset="none" onclick="selectPreset(this)">○ Raw</button>
+        </div>
+      </div>
+
+      <div id="chat-messages">
+        <div class="msg assistant">
+          <div class="msg-avatar">⬡</div>
+          <div class="msg-bubble">
+            <strong style="color:var(--gold);font-family:var(--font-display);letter-spacing:0.05em">ORACLE ONLINE</strong><br>
+            NORTHWOODS AI interface initialized. Select a model above and begin querying. All API keys are loaded from your secure local storage.
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-input-row">
+        <button class="chat-btn" id="btn-voice" onclick="toggleVoice()">🎙</button>
+        <textarea id="chat-input" placeholder="Query the Oracle..." rows="1"
+          oninput="autoResize(this)"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}"></textarea>
+        <button class="chat-btn" id="btn-send" onclick="sendChat()">▶</button>
+      </div>
+    </div><!-- /oracle -->
+
+    <!-- ══════════════════════════════════ GRAPH TAB ══ -->
+    <div id="panel-graph" class="tab-panel" style="height:100%;padding:0">
+      <div class="graph-header">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-family:var(--font-display);font-size:14px;color:var(--gold);letter-spacing:0.2em">NEURAL GRAPH</div>
+            <div style="font-size:9px;color:var(--text-dim);letter-spacing:0.1em;margin-top:2px">KNOWLEDGE NETWORK VISUALIZATION</div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="icon-btn" onclick="resetGraph()" title="Reset view">⟳</button>
+            <button class="icon-btn" onclick="refreshGraph()" title="Refresh">↺</button>
+          </div>
+        </div>
+      </div>
+      <div id="d3-container">
+        <svg id="d3-svg"></svg>
+        <div class="node-tooltip" id="node-tooltip"></div>
+      </div>
+    </div><!-- /graph -->
+
+    <!-- ══════════════════════════════════ DATA TAB ══ -->
+    <div id="panel-data" class="tab-panel">
+      <div class="panel-title-bar">
+        <div>
+          <div class="panel-title">NEXUS DATA</div>
+          <div class="panel-sub">Tasks · Goals · Projects</div>
+        </div>
+        <button class="icon-btn" onclick="refreshData()">↺</button>
+      </div>
+
+      <div class="data-section">
+        <h3>Tasks</h3>
+        <div id="tasks-list"></div>
+        <div class="add-item-row">
+          <input class="add-input" id="new-task-input" placeholder="Add task..." type="text"
+            onkeydown="if(event.key==='Enter')addTask()">
+          <button class="add-btn" onclick="addTask()">+ ADD</button>
+        </div>
+      </div>
+
+      <div style="height:8px"></div>
+      <div class="config-divider"></div>
+
+      <div class="data-section">
+        <h3>Goals</h3>
+        <div id="goals-list"></div>
+        <div class="add-item-row">
+          <input class="add-input" id="new-goal-input" placeholder="Add goal..." type="text"
+            onkeydown="if(event.key==='Enter')addGoal()">
+          <button class="add-btn" onclick="addGoal()">+ ADD</button>
+        </div>
+      </div>
+
+      <div style="height:8px"></div>
+      <div class="config-divider"></div>
+
+      <div class="data-section">
+        <h3>Vault Notes</h3>
+        <div id="vault-preview">
+          <div style="font-size:11px;color:var(--text-dim);padding:8px 0">
+            Vault notes are stored in <code style="color:var(--gold)">nw_vault</code> localStorage key.
+          </div>
+          <div id="vault-list"></div>
+        </div>
+        <div class="add-item-row">
+          <input class="add-input" id="new-vault-input" placeholder="Quick note..." type="text"
+            onkeydown="if(event.key==='Enter')addVaultNote()">
+          <button class="add-btn" onclick="addVaultNote()">+ SAVE</button>
+        </div>
+      </div>
+    </div><!-- /data -->
+
+    <!-- ══════════════════════════════════ CONFIG TAB ══ -->
+    <div id="panel-config" class="tab-panel">
+      <div class="panel-title-bar">
+        <div>
+          <div class="panel-title">CONFIG</div>
+          <div class="panel-sub">Keys · Settings · Install</div>
+        </div>
+      </div>
+
+      <div class="install-cta" id="install-banner" style="display:none">
+        <div class="install-cta-title">⬡ Install NORTHWOODS</div>
+        <div class="install-cta-sub">Add to your home screen for the full app experience</div>
+        <button class="config-action-btn" style="margin:0" onclick="triggerInstall()">INSTALL NOW</button>
+      </div>
+
+      <div class="config-section">
+        <h3>Local AI (Ollama)</h3>
+        <div class="config-field">
+          <label class="config-label">Ollama Host URL</label>
+          <input class="config-input" id="cfg-ollama-url" placeholder="http://192.168.1.x:11434"
+            value="" oninput="saveCfg('nw_ollama_url',this.value)">
+        </div>
+        <div class="config-field">
+          <label class="config-label">Default Model</label>
+          <input class="config-input" id="cfg-ollama-model" placeholder="hermes3"
+            value="" oninput="saveCfg('nw_ollama_model',this.value)">
+        </div>
+      </div>
+
+      <div class="config-divider"></div>
+      <div class="config-section">
+        <h3>Cloud APIs</h3>
+        <div class="config-field">
+          <label class="config-label">Groq API Key</label>
+          <input class="config-input" id="cfg-groq" type="password" placeholder="gsk_..."
+            oninput="saveCfg('nw_groq',this.value)">
+        </div>
+        <div class="config-field">
+          <label class="config-label">Anthropic (Claude) Key</label>
+          <input class="config-input" id="cfg-anthropic" type="password" placeholder="sk-ant-..."
+            oninput="saveCfg('nw_anthropic',this.value)">
+        </div>
+        <div class="config-field">
+          <label class="config-label">OpenRouter Key</label>
+          <input class="config-input" id="cfg-openrouter" type="password" placeholder="sk-or-..."
+            oninput="saveCfg('nw_openrouter',this.value)">
+        </div>
+      </div>
+
+      <div class="config-divider"></div>
+      <div class="config-section">
+        <h3>Actions</h3>
+        <button class="config-action-btn" onclick="testConnections()">⟳ TEST ALL CONNECTIONS</button>
+        <button class="config-action-btn" onclick="exportAllData()">⬇ EXPORT ALL DATA</button>
+        <button class="config-action-btn danger" onclick="clearAllData()">✕ CLEAR ALL LOCAL DATA</button>
+      </div>
+
+      <div class="config-divider"></div>
+      <div class="config-section" style="margin-top:4px;">
+        <h3 style="color:#00ff9d;font-family:monospace;margin:0 0 12px;font-size:13px;letter-spacing:2px;">SYSTEM ▸ OTA UPDATES</h3>
+        <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center;">
+          <span id="ota-version-label" style="color:#666;font-family:monospace;font-size:11px;flex:1;">
+            Version: <span id="ota-ver">bundled</span>
+          </span>
+          <button onclick="OTAUpdater.checkAndUpdate(false)"
+            style="background:rgba(0,255,157,0.1);border:1px solid #00ff9d;color:#00ff9d;
+                   padding:6px 14px;border-radius:6px;font-family:monospace;font-size:12px;cursor:pointer;">
+            CHECK UPDATE
+          </button>
+        </div>
+        <input id="cfg-update-url" placeholder="Update URL (default: Hermes /api/update/version)"
+          style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(0,255,157,0.3);
+                 color:#e0e0e0;padding:8px;border-radius:6px;font-family:monospace;font-size:11px;
+                 box-sizing:border-box;margin-bottom:4px;"
+          onchange="localStorage.setItem('nw_update_url',this.value)" />
+
+        <h3 style="color:#00ff9d;font-family:monospace;margin:12px 0 8px;font-size:13px;letter-spacing:2px;">SYSTEM ▸ SYNC</h3>
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+          <button onclick="SyncManager.push()"
+            style="flex:1;background:rgba(0,255,157,0.1);border:1px solid #00ff9d;color:#00ff9d;
+                   padding:6px;border-radius:6px;font-family:monospace;font-size:11px;cursor:pointer;">
+            PUSH STATE
+          </button>
+          <button onclick="SyncManager.pull().then(ok=>ok||OTAUpdater.showToast('No sync data on server'))"
+            style="flex:1;background:rgba(0,255,157,0.1);border:1px solid #00ff9d;color:#00ff9d;
+                   padding:6px;border-radius:6px;font-family:monospace;font-size:11px;cursor:pointer;">
+            PULL STATE
+          </button>
+        </div>
+        <input id="cfg-sync-url" placeholder="Sync URL (default: Hermes /api/sync)"
+          style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(0,255,157,0.3);
+                 color:#e0e0e0;padding:8px;border-radius:6px;font-family:monospace;font-size:11px;
+                 box-sizing:border-box;"
+          onchange="localStorage.setItem('nw_sync_url',this.value)" />
+        <p style="color:#444;font-family:monospace;font-size:10px;margin:6px 0 0;">
+          Last sync: <span id="last-sync-label">never</span>
+        </p>
+      </div>
+
+      <div style="padding:12px 16px;font-size:10px;color:var(--text-dim);text-align:center;letter-spacing:0.05em">
+        NORTHWOODS MOBILE v3.0 · All data stored locally · No telemetry
+      </div>
+    </div><!-- /config -->
+    <!-- ══════════════════════════════════ MANUAL TAB ══ -->
+    <div id="panel-manual" class="tab-panel">
+      <div class="panel-title-bar">
+        <div>
+          <div class="panel-title">MANUAL</div>
+          <div class="panel-sub">Documentation &amp; Reference</div>
+        </div>
+      </div>
+
+      <!-- Search filter -->
+      <div style="padding:0 16px 12px;">
+        <input id="manual-search" type="search" placeholder="🔍  Filter topics..."
+          oninput="manualFilter(this.value)"
+          style="width:100%;background:rgba(0,255,157,0.05);border:1px solid rgba(0,255,157,0.3);
+                 color:#e0e0e0;padding:10px 14px;border-radius:8px;font-family:monospace;
+                 font-size:13px;box-sizing:border-box;outline:none;">
+      </div>
+
+      <!-- Sections container -->
+      <div id="manual-sections" style="padding:0 12px 24px;">
+
+        <!-- ── Section 1: NORTHWOODS APP ── -->
+        <div class="man-section" data-keywords="northwoods app tabs nexus oracle graph data config ota update sync">
+          <div class="man-hdr" onclick="manToggle(this)">
+            <span>01 · NORTHWOODS APP</span><span class="man-arrow">▼</span>
+          </div>
+          <div class="man-body">
+            <p>NORTHWOODS is a self-hosted AI portal that runs entirely from a single HTML file. All data is stored in your browser's localStorage — no cloud accounts required.</p>
+
+            <div class="man-sub">NEXUS TAB</div>
+            <p>Your primary chat interface. Select a model from the dropdown (Ollama local, Groq, Claude, or OpenRouter), type your message, and hit Send. Responses stream in real time. You can switch system personas (SAIA · Code · Creative · Research) to change how the AI responds.</p>
+
+            <div class="man-sub">ORACLE TAB</div>
+            <p>Deep research mode. Oracle chains multiple AI calls — it breaks your question into sub-queries, synthesises the results, and presents a structured answer. Best for complex technical or research questions where a single LLM pass isn't enough.</p>
+
+            <div class="man-sub">GRAPH TAB</div>
+            <p>A live visual knowledge graph. Nodes represent ideas, entities, or documents. Click any node to expand its connections, drag to rearrange the layout, and double-click to edit the label. Data persists in localStorage under the key <span class="man-code">nw_graph_nodes</span>.</p>
+
+            <div class="man-sub">DATA TAB</div>
+            <p>A structured key-value data store. Add records manually, import a JSON file, or export everything. Records can be linked to Graph nodes for cross-referencing. Agent outputs are saved here automatically.</p>
+
+            <div class="man-sub">CONFIG TAB</div>
+            <p>Set your API keys, Ollama host URL, default model, OTA update URL, and sync URL. All keys are stored only in your local device storage and are never sent to any server other than the API you're directly calling.</p>
+
+            <div class="man-sub">OTA UPDATES</div>
+            <p>When your Hermes server is running on the same network, the app can update itself without a reinstall:</p>
+            <ol class="man-list">
+              <li>Open Config tab</li>
+              <li>Set Update URL to <span class="man-code">http://&lt;your-PC-IP&gt;:8642/api/update/version</span></li>
+              <li>Tap <strong>CHECK UPDATE</strong></li>
+              <li>If a new version is available it downloads and applies automatically on reload</li>
+            </ol>
+            <p>The version is an MD5 hash of <span class="man-code">NORTHWOODS_Mobile.html</span> — it changes every time you edit that file.</p>
+
+            <div class="man-sub">CROSS-DEVICE SYNC</div>
+            <p>All <span class="man-code">nw_*</span> localStorage keys (API keys, settings, graph data) can be synced between your desktop browser and the Android app via Hermes:</p>
+            <ol class="man-list">
+              <li>On your desktop: open Config → set Sync URL → tap <strong>PUSH STATE</strong></li>
+              <li>On your phone: set same Sync URL → tap <strong>PULL STATE</strong></li>
+              <li>Everything is restored in seconds</li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- ── Section 2: HERMES SERVER ── -->
+        <div class="man-section" data-keywords="hermes server flask port 8642 ollama start api endpoints cloudflare tunnel">
+          <div class="man-hdr" onclick="manToggle(this)">
+            <span>02 · HERMES SERVER</span><span class="man-arrow">▼</span>
+          </div>
+          <div class="man-body">
+            <p>Hermes is a lightweight Flask server that runs on your PC. It acts as a privacy layer between your apps and AI services — your API keys stay on your machine, never in the cloud.</p>
+
+            <div class="man-sub">STARTING HERMES</div>
+            <p>Double-click <span class="man-code">start_hermes.bat</span> in your NORTHWOODS folder. A terminal opens. Hermes is ready when you see:</p>
+            <div class="man-block">Running on http://0.0.0.0:8642</div>
+            <p>Or from PowerShell:</p>
+            <div class="man-block">cd C:\Users\darkh\Documents\NORTHWOODS
+python hermes_server.py</div>
+
+            <div class="man-sub">WHAT HERMES DOES</div>
+            <ul class="man-list">
+              <li>Routes AI requests to local Ollama models on port 11434</li>
+              <li>Stores and serves sync state for cross-device settings</li>
+              <li>Serves OTA app updates — just edit NORTHWOODS_Mobile.html and the app auto-detects the new version</li>
+              <li>Runs a ReAct agent loop for autonomous multi-step tasks</li>
+              <li>Stores memories, tasks, and goals as JSON files in the Neural_Nexus folder</li>
+            </ul>
+
+            <div class="man-sub">API ENDPOINTS</div>
+            <div class="man-block">GET  /health                 — heartbeat
+GET  /api/status             — server + Ollama status
+GET  /api/models             — list local Ollama models
+POST /api/chat               — streaming chat proxy
+GET  /api/update/version     — returns current HTML version hash
+GET  /api/update/app         — serves NORTHWOODS_Mobile.html
+GET  /api/sync               — retrieve synced state
+POST /api/sync               — push state from a device
+POST /api/agent/run          — run autonomous agent task
+GET  /api/memory             — retrieve memories
+POST /api/memory             — save a memory
+GET  /api/tasks              — list tasks
+GET  /api/goals              — list goals</div>
+
+            <div class="man-sub">REMOTE ACCESS VIA CLOUDFLARE TUNNEL</div>
+            <p>To reach Hermes from outside your home network (e.g. from your phone on mobile data):</p>
+            <ol class="man-list">
+              <li>Install Cloudflare Tunnel: <span class="man-code">winget install cloudflare.cloudflared</span></li>
+              <li>Run: <span class="man-code">cloudflared tunnel --url http://localhost:8642</span></li>
+              <li>Copy the generated <span class="man-code">*.trycloudflare.com</span> URL</li>
+              <li>Paste it into the app's <strong>Update URL</strong> and <strong>Sync URL</strong> fields in Config</li>
+            </ol>
+            <p>The tunnel URL changes each time you restart cloudflared unless you create a named tunnel.</p>
+
+            <div class="man-sub">OLLAMA SETUP</div>
+            <ol class="man-list">
+              <li>Download from <span class="man-code">ollama.com</span></li>
+              <li>Install and start Ollama (it runs as a background service on port 11434)</li>
+              <li>Pull a model: <span class="man-code">ollama pull llama3</span> or <span class="man-code">ollama pull hermes3</span></li>
+              <li>In NORTHWOODS Config, set Ollama Host to <span class="man-code">http://&lt;your-PC-IP&gt;:11434</span></li>
+              <li>Select any ollama: model in the Nexus dropdown</li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- ── Section 3: SAIA AGENTS ── -->
+        <div class="man-section" data-keywords="saia agents autonomous tasks files web research code schedule agent">
+          <div class="man-hdr" onclick="manToggle(this)">
+            <span>03 · SAIA AGENTS</span><span class="man-arrow">▼</span>
+          </div>
+          <div class="man-body">
+            <p>SAIA (Sentient Adaptive Intelligence Architecture) agents run autonomous multi-step tasks on your behalf — file operations, web research, code execution, and scheduling — all orchestrated through Hermes.</p>
+
+            <div class="man-sub">STARTING AN AGENT</div>
+            <p>In the Nexus tab, select a SAIA-capable model, then prefix your message with <span class="man-code">@agent:</span>:</p>
+            <div class="man-block">@agent: summarise all .txt files in my Downloads folder
+@agent: research the latest news on quantum computing and save a summary
+@agent: write a Python script to rename files by date and run it</div>
+
+            <div class="man-sub">AGENT TYPES</div>
+            <ul class="man-list">
+              <li><strong>Research</strong> — web search + file search, synthesises sources</li>
+              <li><strong>Code</strong> — writes and executes Python or JavaScript, returns output</li>
+              <li><strong>File</strong> — organises, renames, converts, or reads files on your PC</li>
+              <li><strong>Schedule</strong> — sets recurring tasks (requires Hermes to stay running)</li>
+            </ul>
+
+            <div class="man-sub">AGENT OUTPUT</div>
+            <p>Results stream into the Nexus chat and are automatically saved to the Data tab under a timestamped key. You can also ask the agent to save specific results:</p>
+            <div class="man-block">@agent: research X and save the result to my knowledge graph</div>
+
+            <div class="man-sub">SAFETY GUARDRAILS</div>
+            <ul class="man-list">
+              <li>Agents ask for confirmation before deleting files</li>
+              <li>Network requests outside your local subnet require explicit approval</li>
+              <li>All agent actions are logged to <span class="man-code">NORTHWOODS/Neural_Nexus/agent_log.json</span></li>
+            </ul>
+
+            <div class="man-sub">VIEWING LOGS</div>
+            <p>Open the Data tab and look for the <span class="man-code">agent_log</span> key, or read the file directly:</p>
+            <div class="man-block">C:\Users\darkh\Documents\NORTHWOODS\Neural_Nexus\agent_log.json</div>
+          </div>
+        </div>
+
+        <!-- ── Section 4: CLAUDE CODE ── -->
+        <div class="man-section" data-keywords="claude code cli terminal npm install anthropic agentic coding mcp plugins">
+          <div class="man-hdr" onclick="manToggle(this)">
+            <span>04 · CLAUDE CODE</span><span class="man-arrow">▼</span>
+          </div>
+          <div class="man-body">
+            <p>Claude Code is Anthropic's agentic coding CLI. It reads your entire codebase, understands it, and can edit files, run tests, and ship changes autonomously — all from your terminal.</p>
+
+            <div class="man-sub">INSTALLATION</div>
+            <div class="man-block">npm install -g @anthropic-ai/claude-code</div>
+            <p>Requires Node.js 18+. Check with <span class="man-code">node --version</span>. If Node isn't installed: <span class="man-code">winget install OpenJS.NodeJS</span></p>
+
+            <div class="man-sub">STARTING A SESSION</div>
+            <div class="man-block">cd C:\Users\darkh\Documents\NORTHWOODS
+claude</div>
+            <p>Claude reads your files and waits for instructions. You can also give one-shot commands:</p>
+            <div class="man-block">claude "add a dark mode toggle to NORTHWOODS_Mobile.html"
+claude "fix the OTA update logic so it handles network timeouts better"
+claude "rebuild the APK after my edits"</div>
+
+            <div class="man-sub">KEY SLASH COMMANDS</div>
+            <div class="man-block">/help       — list all commands
+/plan       — show what Claude intends to do before doing it
+/compact    — summarise context to save tokens on long sessions
+/continue   — resume the last session
+/clear      — clear conversation history
+/review     — ask Claude to review a specific file</div>
+
+            <div class="man-sub">WITH NORTHWOODS</div>
+            <p>Run Claude Code from your NORTHWOODS folder. Claude can:</p>
+            <ul class="man-list">
+              <li>Edit NORTHWOODS_Mobile.html (new tabs, UI fixes, new features)</li>
+              <li>Add or modify Hermes Flask routes in hermes_server.py</li>
+              <li>Rebuild the Android APK (it knows the gradle commands)</li>
+              <li>Debug Capacitor issues and sync the www/ folder</li>
+            </ul>
+            <div class="man-block">claude "add a voice transcription tab to NORTHWOODS"
+claude "make the Graph tab support node colours by category"</div>
+
+            <div class="man-sub">MCP PLUGINS</div>
+            <p>Claude Code supports Model Context Protocol plugins that give it access to external services:</p>
+            <div class="man-block">claude mcp add github      # GitHub repo access
+claude mcp add slack       # Read/write Slack messages
+claude mcp add google-drive # Access Google Drive files
+claude mcp list            # Show installed plugins</div>
+          </div>
+        </div>
+
+        <!-- ── Section 5: CLAUDE DESIGN (Canva AI) ── -->
+        <div class="man-section" data-keywords="canva design ai magic write image brand kit export png pdf">
+          <div class="man-hdr" onclick="manToggle(this)">
+            <span>05 · CLAUDE DESIGN  ·  CANVA AI</span><span class="man-arrow">▼</span>
+          </div>
+          <div class="man-body">
+            <p>Canva's AI tools let you generate designs, write copy, and create images without leaving the browser. No design experience needed.</p>
+
+            <div class="man-sub">ACCESSING CANVA AI</div>
+            <ol class="man-list">
+              <li>Go to <span class="man-code">canva.com</span> and sign in</li>
+              <li>Click <strong>Create a design</strong> and choose a format</li>
+              <li>The AI sidebar appears on the right — click <strong>Magic Studio</strong></li>
+            </ol>
+
+            <div class="man-sub">MAGIC DESIGN</div>
+            <p>Upload a photo or describe a concept in plain English. Canva instantly generates 8+ layout variations. Pick one and customise it.</p>
+            <div class="man-block">Example prompt: "A dark tech poster for an AI app called NORTHWOODS with forest imagery and neon green accents"</div>
+
+            <div class="man-sub">MAGIC WRITE</div>
+            <p>Select any text element → right-click → <strong>Magic Write</strong> → describe what you want. It rewrites, expands, or summarises any copy on the canvas.</p>
+
+            <div class="man-sub">TEXT TO IMAGE</div>
+            <p><strong>Insert → AI Images</strong> → describe your image in detail. Generates directly on the canvas. Tip: add style keywords like <span class="man-code">cinematic, synthwave, dark forest, bioluminescent</span>.</p>
+
+            <div class="man-sub">BRAND KIT</div>
+            <ol class="man-list">
+              <li>Go to <strong>Brand → Brand Kit</strong></li>
+              <li>Upload your logo, set your brand colours (<span class="man-code">#0a0e17</span>, <span class="man-code">#00ff9d</span>, <span class="man-code">#d4af37</span>)</li>
+              <li>Add your font (JetBrains Mono or Cinzel)</li>
+              <li>All future AI designs will pull from your Brand Kit automatically</li>
+            </ol>
+
+            <div class="man-sub">EXPORTING</div>
+            <div class="man-block">File → Download → PNG  (transparent background for overlays)
+File → Download → PDF  (print-ready)
+File → Download → MP4  (animated designs)
+Share → Publish to web  (live shareable URL)</div>
+
+            <div class="man-sub">WITH NORTHWOODS</div>
+            <p>Export Canva designs as PNG and drop them into the NORTHWOODS Graph tab as node images. This creates a visual knowledge map where each node can carry a design asset as its visual identity.</p>
+          </div>
+        </div>
+
+        <!-- ── Section 6: OBSIDIAN ── -->
+        <div class="man-section" data-keywords="obsidian markdown notes knowledge base graph links vault plugins dataview templater kanban sync">
+          <div class="man-hdr" onclick="manToggle(this)">
+            <span>06 · OBSIDIAN</span><span class="man-arrow">▼</span>
+          </div>
+          <div class="man-body">
+            <p>Obsidian is a local-first markdown knowledge base with a visual graph view — think of it as a desktop equivalent of the NORTHWOODS Graph tab, but for long-form notes and research.</p>
+
+            <div class="man-sub">INSTALLATION</div>
+            <ol class="man-list">
+              <li>Download from <span class="man-code">obsidian.md</span></li>
+              <li>Install and click <strong>Create new vault</strong></li>
+              <li>Point it at a folder, e.g. <span class="man-code">C:\Users\darkh\Documents\NORTHWOODS\notes\</span></li>
+            </ol>
+
+            <div class="man-sub">CORE CONCEPTS</div>
+            <ul class="man-list">
+              <li><strong>Notes</strong> — plain <span class="man-code">.md</span> files. One idea per note.</li>
+              <li><strong>Links</strong> — type <span class="man-code">[[note name]]</span> to create a bidirectional link between notes. Obsidian automatically builds the reverse link.</li>
+              <li><strong>Graph view</strong> — press <span class="man-code">Ctrl+G</span> to open the full graph of all linked notes. Pan, zoom, and click nodes to jump to any note.</li>
+              <li><strong>Tags</strong> — add <span class="man-code">#tag</span> anywhere in a note to group related ideas.</li>
+              <li><strong>Backlinks</strong> — every note shows a panel listing all other notes that link to it.</li>
+            </ul>
+
+            <div class="man-sub">KEYBOARD SHORTCUTS</div>
+            <div class="man-block">Ctrl+N        — new note
+Ctrl+G        — open graph view
+Ctrl+P        — command palette (search all commands)
+Ctrl+[        — navigate back
+Ctrl+Shift+F  — search all notes
+Ctrl+E        — toggle edit / preview mode</div>
+
+            <div class="man-sub">RECOMMENDED PLUGINS</div>
+            <p>Settings → Community plugins → Browse → search by name:</p>
+            <ul class="man-list">
+              <li><strong>Dataview</strong> — query your notes like a database: <span class="man-code">LIST FROM #project WHERE status = "active"</span></li>
+              <li><strong>Templater</strong> — create note templates with dynamic fields and JavaScript snippets</li>
+              <li><strong>Kanban</strong> — turn any note into a drag-and-drop task board</li>
+              <li><strong>Excalidraw</strong> — draw diagrams and wireframes directly inside notes</li>
+              <li><strong>Obsidian Git</strong> — auto-commit and sync your vault to a GitHub repo</li>
+            </ul>
+
+            <div class="man-sub">WITH NORTHWOODS</div>
+            <p>Point your Obsidian vault at the same folder Hermes can read. Then from the Nexus tab, ask the AI to create, search, or link notes:</p>
+            <div class="man-block">@agent: summarise this conversation as an Obsidian note with backlinks
+@agent: find all notes tagged #research and create a summary note
+@agent: create a new note about [topic] linked to my existing [[index]] note</div>
+            <p>You can also ask Claude Code to automate Obsidian workflows — e.g. auto-generate a daily note from your task list every morning.</p>
+          </div>
+        </div>
+
+      </div><!-- /manual-sections -->
+    </div><!-- /panel-manual -->
+
+  </div><!-- /content-area -->
+
+  <!-- ══════════════════════════════════ BOTTOM NAV ══ -->
+  <nav id="bottom-nav">
+    <button class="nav-btn active" data-tab="nexus" onclick="switchTab('nexus')">
+      <span class="nav-icon">⬡</span>
+      <span class="nav-label">Nexus</span>
+    </button>
+    <button class="nav-btn" data-tab="oracle" onclick="switchTab('oracle')">
+      <span class="nav-icon">◈</span>
+      <span class="nav-label">Oracle</span>
+    </button>
+    <button class="nav-btn" data-tab="graph" onclick="switchTab('graph')">
+      <span class="nav-icon">◉</span>
+      <span class="nav-label">Graph</span>
+    </button>
+    <button class="nav-btn" data-tab="data" onclick="switchTab('data')">
+      <span class="nav-icon">▦</span>
+      <span class="nav-label">Data</span>
+    </button>
+    <button class="nav-btn" data-tab="config" onclick="switchTab('config')">
+      <span class="nav-icon">⚙</span>
+      <span class="nav-label">Config</span>
+    </button>
+    <button class="nav-btn" data-tab="manual" onclick="switchTab('manual')">
+      <span class="nav-icon">📖</span>
+      <span class="nav-label">Manual</span>
+    </button>
+  </nav>
+</div><!-- /app -->
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   NORTHWOODS MOBILE — Core State & Storage
+═══════════════════════════════════════════════════════════ */
+const STATE = {
+  activeTab: 'nexus',
+  selectedModel: 'ollama:hermes3',
+  selectedPreset: 'saia',
+  chatHistory: [],
+  isGenerating: false,
+  voiceRecognition: null,
+  isListening: false,
+  deferredInstall: null,
+  graphSimulation: null,
+};
+
+const PRESETS = {
+  saia: `You are SAIA (Sentient Adaptive Intelligence Architecture), the AI core of NORTHWOODS. You are analytical, precise, and have access to the user's local system context. Respond concisely. Format code in fenced blocks.`,
+  code: `You are an expert programmer and systems architect. Provide precise, working code. Use fenced code blocks with language tags. Be direct and technical.`,
+  creative: `You are a creative intelligence with deep knowledge and lateral thinking. Be imaginative, expansive, and make unexpected connections. Paint vivid pictures with words.`,
+  concise: `Respond in as few words as possible while being complete. No preamble, no filler. Direct answers only.`,
+  none: '',
+};
+
+// ─── STORAGE HELPERS ────────────────────────────────────────
+const LS = {
+  get: (k, def=null) => { try { const v=localStorage.getItem(k); return v!==null?JSON.parse(v):def; } catch{return def;} },
+  set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch{} },
+  raw: (k) => localStorage.getItem(k)||'',
+  setRaw: (k, v) => localStorage.setItem(k, v||''),
+};
+
+function saveCfg(key, val) { LS.setRaw(key, val); nexusLog(`Saved ${key}`); }
+
+function loadConfig() {
+  const fields = [
+    ['cfg-ollama-url','nw_ollama_url'],
+    ['cfg-ollama-model','nw_ollama_model'],
+    ['cfg-groq','nw_groq'],
+    ['cfg-anthropic','nw_anthropic'],
+    ['cfg-openrouter','nw_openrouter'],
+  ];
+  fields.forEach(([id,key])=>{
+    const el = document.getElementById(id);
+    if(el) el.value = LS.raw(key)||'';
+  });
+  // OTA + Sync fields
+  const updEl = document.getElementById('cfg-update-url');
+  if(updEl) updEl.value = localStorage.getItem('nw_update_url') || '';
+  const syncEl = document.getElementById('cfg-sync-url');
+  if(syncEl) syncEl.value = localStorage.getItem('nw_sync_url') || '';
+  const verEl = document.getElementById('ota-ver');
+  if(verEl) verEl.textContent = (typeof OTAUpdater !== 'undefined') ? OTAUpdater.getCurrentVersion() : (localStorage.getItem('nw_app_version') || 'bundled');
+  const lastSync = localStorage.getItem('nw_last_sync');
+  const lsEl = document.getElementById('last-sync-label');
+  if(lsEl && lastSync) lsEl.textContent = new Date(lastSync).toLocaleString();
+}
+</script>
+<script>
+/* ═══════════════════════════════════════════════════════════
+   BACKGROUND: Canvas Neural Particle System
+═══════════════════════════════════════════════════════════ */
+(function initBackground(){
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles=[], digits=[], raf;
+
+  function resize(){
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+
+  class Particle {
+    constructor(){
+      this.x = Math.random()*W;
+      this.y = Math.random()*H;
+      this.vx = (Math.random()-0.5)*0.3;
+      this.vy = (Math.random()-0.5)*0.3;
+      this.r = Math.random()*1.5+0.5;
+      this.gold = Math.random()>0.6;
+      this.alpha = Math.random()*0.5+0.1;
+    }
+    update(){
+      this.x+=this.vx; this.y+=this.vy;
+      if(this.x<0)this.x=W; if(this.x>W)this.x=0;
+      if(this.y<0)this.y=H; if(this.y>H)this.y=0;
+    }
+    draw(){
+      ctx.beginPath();
+      ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
+      ctx.fillStyle = this.gold
+        ? `rgba(212,175,55,${this.alpha})`
+        : `rgba(78,204,163,${this.alpha*0.7})`;
+      ctx.fill();
+    }
+  }
+
+  class DigitRain {
+    constructor(){
+      this.x = Math.floor(Math.random()*(W/14))*14;
+      this.y = -20;
+      this.speed = Math.random()*1.2+0.4;
+      this.chars = [];
+      this.len = Math.floor(Math.random()*8)+3;
+      for(let i=0;i<this.len;i++) this.chars.push(Math.floor(Math.random()*10));
+      this.alpha = Math.random()*0.06+0.02;
+    }
+    update(){
+      this.y+=this.speed;
+      if(Math.random()<0.08) this.chars[Math.floor(Math.random()*this.len)]=Math.floor(Math.random()*10);
+    }
+    draw(){
+      ctx.font='10px JetBrains Mono,monospace';
+      this.chars.forEach((ch,i)=>{
+        const fade = (i/this.len)*this.alpha;
+        ctx.fillStyle=`rgba(212,175,55,${fade})`;
+        ctx.fillText(ch, this.x, this.y+i*14);
+      });
+    }
+    isDead(){ return this.y>H+100; }
+  }
+
+  function initParticles(){
+    const N = Math.floor(W*H/12000);
+    particles=[];
+    for(let i=0;i<N;i++) particles.push(new Particle());
+    digits=[];
+    for(let i=0;i<Math.floor(W/80);i++) digits.push(new DigitRain());
+  }
+
+  function drawConnections(){
+    const maxDist=100;
+    for(let i=0;i<particles.length;i++){
+      for(let j=i+1;j<particles.length;j++){
+        const dx=particles[i].x-particles[j].x;
+        const dy=particles[i].y-particles[j].y;
+        const dist=Math.sqrt(dx*dx+dy*dy);
+        if(dist<maxDist){
+          const alpha=(1-dist/maxDist)*0.08;
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x,particles[i].y);
+          ctx.lineTo(particles[j].x,particles[j].y);
+          ctx.strokeStyle=`rgba(212,175,55,${alpha})`;
+          ctx.lineWidth=0.5;
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  function animate(){
+    ctx.fillStyle='rgba(5,4,3,0.4)';
+    ctx.fillRect(0,0,W,H);
+    digits.forEach(d=>{ d.update(); d.draw(); });
+    digits=digits.filter(d=>!d.isDead());
+    if(Math.random()<0.03&&digits.length<W/40) digits.push(new DigitRain());
+    drawConnections();
+    particles.forEach(p=>{ p.update(); p.draw(); });
+    raf=requestAnimationFrame(animate);
+  }
+
+  resize(); initParticles();
+  window.addEventListener('resize',()=>{ resize(); initParticles(); });
+  animate();
+})();
+</script>
+<script>
+/* ═══════════════════════════════════════════════════════════
+   TAB NAVIGATION
+═══════════════════════════════════════════════════════════ */
+function switchTab(tab){
+  const prev = STATE.activeTab;
+  if(prev===tab) return;
+  STATE.activeTab = tab;
+
+  document.querySelectorAll('.tab-panel').forEach(p=>{
+    p.classList.remove('active');
+    p.style.display='none';
+  });
+  document.querySelectorAll('.nav-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.tab===tab);
+  });
+
+  const panel = document.getElementById(`panel-${tab}`);
+  if(panel){
+    panel.style.display='block';
+    requestAnimationFrame(()=>{ panel.classList.add('active'); });
+  }
+
+  if(tab==='graph') initGraph();
+  if(tab==='data') refreshData();
+  if(tab==='nexus') updateStats();
+  if(tab==='config') loadConfig();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   NEXUS — Status & Stats
+═══════════════════════════════════════════════════════════ */
+function nexusLog(msg){
+  const log = document.getElementById('nexus-log');
+  if(!log) return;
+  const div=document.createElement('div');
+  div.textContent = `> ${msg}`;
+  div.style.opacity='0';
+  log.appendChild(div);
+  requestAnimationFrame(()=>{ div.style.transition='opacity 0.4s'; div.style.opacity='1'; });
+  while(log.children.length>8) log.removeChild(log.firstChild);
+}
+
+function setDot(id, status){
+  const dot=document.getElementById(id);
+  if(!dot) return;
+  dot.className='status-dot'+(status==='online'?' online':status==='offline'?' offline':'');
+}
+
+async function checkConnections(){
+  // Ollama
+  const ollamaUrl = LS.raw('nw_ollama_url')||'http://localhost:11434';
+  try{
+    const res = await Promise.race([
+      fetch(`${ollamaUrl}/api/tags`,{method:'GET'}),
+      new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),3000))
+    ]);
+    if(res.ok){
+      setDot('dot-ollama','online');
+      nexusLog('Hermes/Ollama: ONLINE');
+      const data = await res.json();
+      STATE.ollamaModels = data.models||[];
+    } else { setDot('dot-ollama','offline'); }
+  } catch{ setDot('dot-ollama','offline'); nexusLog('Hermes/Ollama: OFFLINE'); }
+
+  // Groq
+  const groqKey = LS.raw('nw_groq');
+  setDot('dot-groq', groqKey?'online':'offline');
+
+  // Claude
+  const claudeKey = LS.raw('nw_anthropic');
+  setDot('dot-claude', claudeKey?'online':'offline');
+}
+
+function updateStats(){
+  const tasks = LS.get('nw_tasks',[]);
+  const goals = LS.get('nw_goals',[]);
+  const vault = LS.get('nw_vault',[]);
+  const msgs = STATE.chatHistory.length;
+  document.getElementById('stat-tasks').textContent = tasks.length||'0';
+  document.getElementById('stat-goals').textContent = goals.length||'0';
+  document.getElementById('stat-notes').textContent = vault.length||'0';
+  document.getElementById('stat-msgs').textContent = msgs||'0';
+  const modelParts = STATE.selectedModel.split(':');
+  document.getElementById('active-model-display').textContent = modelParts[1]||STATE.selectedModel;
+  document.getElementById('active-model-sub').textContent = modelParts[0]?.toUpperCase()+' · '+modelParts[1];
+}
+
+async function testConnections(){
+  nexusLog('Testing all connections...');
+  await checkConnections();
+  nexusLog('Connection test complete.');
+}
+</script>
+<script>
+/* ═══════════════════════════════════════════════════════════
+   ORACLE — Model & Preset Selection
+═══════════════════════════════════════════════════════════ */
+function selectModel(btn){
+  document.querySelectorAll('.model-chip').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  STATE.selectedModel = btn.dataset.model;
+  nexusLog(`Model: ${btn.dataset.model}`);
+  updateStats();
+}
+function selectPreset(btn){
+  document.querySelectorAll('.preset-chip').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  STATE.selectedPreset = btn.dataset.preset;
+}
+function autoResize(el){
+  el.style.height='auto';
+  el.style.height=Math.min(el.scrollHeight,120)+'px';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CHAT — Rendering
+═══════════════════════════════════════════════════════════ */
+function renderMarkdown(text){
+  // Code blocks
+  text = text.replace(/```(\w*)\n?([\s\S]*?)```/g,(_,lang,code)=>{
+    const hl = (window.hljs&&lang&&hljs.getLanguage(lang))
+      ? hljs.highlight(code.trim(),{language:lang}).value
+      : (window.hljs?hljs.highlightAuto(code.trim()).value:escHtml(code.trim()));
+    return `<pre><code class="hljs language-${lang||'plaintext'}">${hl}</code></pre>`;
+  });
+  // Inline code
+  text = text.replace(/`([^`]+)`/g,'<code>$1</code>');
+  // Bold
+  text = text.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  // Italic
+  text = text.replace(/\*(.+?)\*/g,'<em>$1</em>');
+  // Newlines
+  text = text.replace(/\n/g,'<br>');
+  return text;
+}
+function escHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function addMessage(role, content, streaming=false){
+  const container = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className=`msg ${role}`;
+  const avatar=document.createElement('div');
+  avatar.className='msg-avatar';
+  avatar.textContent = role==='assistant'?'⬡':'◈';
+  const bubble=document.createElement('div');
+  bubble.className='msg-bubble'+(streaming?' typing-cursor':'');
+  if(streaming){
+    bubble.dataset.raw='';
+  } else {
+    bubble.innerHTML = renderMarkdown(content);
+  }
+  div.appendChild(avatar);
+  div.appendChild(bubble);
+  container.appendChild(div);
+  container.scrollTop=container.scrollHeight;
+  if(role==='assistant'&&!streaming){
+    STATE.chatHistory.push({role:'assistant',content});
+  }
+  if(role==='user'){
+    STATE.chatHistory.push({role:'user',content});
+  }
+  updateStats();
+  return bubble;
+}
+
+function appendStream(bubble, chunk){
+  bubble.dataset.raw=(bubble.dataset.raw||'')+chunk;
+  bubble.innerHTML=renderMarkdown(bubble.dataset.raw);
+  bubble.classList.add('typing-cursor');
+  document.getElementById('chat-messages').scrollTop=99999;
+}
+function finalizeStream(bubble){
+  bubble.classList.remove('typing-cursor');
+  STATE.chatHistory.push({role:'assistant',content:bubble.dataset.raw||bubble.textContent});
+  updateStats();
+}
+
+function clearChat(){
+  document.getElementById('chat-messages').innerHTML=`
+    <div class="msg assistant">
+      <div class="msg-avatar">⬡</div>
+      <div class="msg-bubble"><strong style="color:var(--gold);font-family:var(--font-display)">SESSION CLEARED</strong><br>Ready for new input.</div>
+    </div>`;
+  STATE.chatHistory=[];
+  updateStats();
+}
+function exportChat(){
+  const text=STATE.chatHistory.map(m=>`[${m.role.toUpperCase()}]\n${m.content}`).join('\n\n---\n\n');
+  const blob=new Blob([text],{type:'text/plain'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`northwoods-chat-${Date.now()}.txt`;
+  a.click();
+}
+</script>
+<script>
+/* ═══════════════════════════════════════════════════════════
+   AI ROUTING — Ollama / Groq / Claude / OpenRouter
+═══════════════════════════════════════════════════════════ */
+async function sendChat(){
+  if(STATE.isGenerating) return;
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if(!text) return;
+  input.value='';
+  input.style.height='auto';
+
+  addMessage('user',text);
+  STATE.isGenerating=true;
+  document.getElementById('btn-send').style.opacity='0.4';
+
+  const systemPrompt = PRESETS[STATE.selectedPreset]||'';
+  const msgs = [];
+  if(systemPrompt) msgs.push({role:'system',content:systemPrompt});
+  // include up to last 10 messages for context
+  const ctx = STATE.chatHistory.slice(-10);
+  ctx.forEach(m=>msgs.push(m));
+
+  const bubble = addMessage('assistant','',true);
+
+  try {
+    const [provider,model] = STATE.selectedModel.split(':');
+    if(provider==='ollama') await callOllama(model,msgs,bubble);
+    else if(provider==='groq') await callGroq(model,msgs,bubble);
+    else if(provider==='claude') await callClaude(model,msgs,bubble,systemPrompt);
+    else if(provider==='openrouter') await callOpenRouter(model,msgs,bubble);
+    else throw new Error('Unknown provider: '+provider);
+  } catch(e){
+    appendStream(bubble,'\n\n⚠ Error: '+e.message);
+    nexusLog('Error: '+e.message);
+  }
+
+  finalizeStream(bubble);
+  STATE.isGenerating=false;
+  document.getElementById('btn-send').style.opacity='1';
+}
+
+// ─── OLLAMA ─────────────────────────────────────────────────
+async function callOllama(model, msgs, bubble){
+  const base = LS.raw('nw_ollama_url')||'http://localhost:11434';
+  const body = {model:model||LS.raw('nw_ollama_model')||'hermes3',messages:msgs,stream:true};
+  const res = await fetch(`${base}/api/chat`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(body)
+  });
+  if(!res.ok) throw new Error(`Ollama ${res.status}`);
+  const reader=res.body.getReader();
+  const dec=new TextDecoder();
+  while(true){
+    const {done,value}=await reader.read();
+    if(done) break;
+    const lines=dec.decode(value).split('\n').filter(Boolean);
+    for(const line of lines){
+      try{
+        const j=JSON.parse(line);
+        if(j.message?.content) appendStream(bubble,j.message.content);
+      }catch{}
+    }
+  }
+}
+
+// ─── GROQ ────────────────────────────────────────────────────
+async function callGroq(model, msgs, bubble){
+  const key=LS.raw('nw_groq');
+  if(!key) throw new Error('No Groq key. Set in Config tab.');
+  const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},
+    body:JSON.stringify({model,messages:msgs,stream:true,max_tokens:2048})
+  });
+  if(!res.ok){ const t=await res.text(); throw new Error(`Groq ${res.status}: ${t.slice(0,100)}`); }
+  const reader=res.body.getReader(); const dec=new TextDecoder();
+  let buf='';
+  while(true){
+    const {done,value}=await reader.read();
+    if(done) break;
+    buf+=dec.decode(value);
+    const lines=buf.split('\n');
+    buf=lines.pop();
+    for(const line of lines){
+      if(!line.startsWith('data:')) continue;
+      const d=line.slice(5).trim();
+      if(d==='[DONE]') return;
+      try{ const j=JSON.parse(d); const c=j.choices?.[0]?.delta?.content; if(c) appendStream(bubble,c); }catch{}
+    }
+  }
+}
+</script>
+
+<script>
+// ─── CLAUDE ──────────────────────────────────────────────────
+async function callClaude(model, msgs, bubble, systemPrompt){
+  const key=LS.raw('nw_anthropic');
+  if(!key) throw new Error('No Anthropic key. Set in Config tab.');
+  const body={model,max_tokens:2048,stream:true,messages:msgs.filter(m=>m.role!=='system')};
+  if(systemPrompt) body.system=systemPrompt;
+  const res=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify(body)
+  });
+  if(!res.ok){const t=await res.text();throw new Error(`Claude ${res.status}: ${t.slice(0,120)}`);}
+  const reader=res.body.getReader();const dec=new TextDecoder();let buf='';
+  while(true){
+    const {done,value}=await reader.read();if(done)break;
+    buf+=dec.decode(value);const lines=buf.split('\n');buf=lines.pop();
+    for(const line of lines){
+      if(!line.startsWith('data:'))continue;
+      const d=line.slice(5).trim();if(d==='[DONE]')return;
+      try{const j=JSON.parse(d);const c=j.delta?.text;if(c)appendStream(bubble,c);}catch{}
+    }
+  }
+}
+
+// ─── OPENROUTER ──────────────────────────────────────────────
+async function callOpenRouter(model, msgs, bubble){
+  const key=LS.raw('nw_openrouter');
+  if(!key) throw new Error('No OpenRouter key. Set in Config tab.');
+  const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`,'HTTP-Referer':'https://northwoods.local'},
+    body:JSON.stringify({model,messages:msgs,stream:true})
+  });
+  if(!res.ok){const t=await res.text();throw new Error(`OpenRouter ${res.status}: ${t.slice(0,100)}`);}
+  const reader=res.body.getReader();const dec=new TextDecoder();let buf='';
+  while(true){
+    const {done,value}=await reader.read();if(done)break;
+    buf+=dec.decode(value);const lines=buf.split('\n');buf=lines.pop();
+    for(const line of lines){
+      if(!line.startsWith('data:'))continue;
+      const d=line.slice(5).trim();if(d==='[DONE]')return;
+      try{const j=JSON.parse(d);const c=j.choices?.[0]?.delta?.content;if(c)appendStream(bubble,c);}catch{}
+    }
+  }
+}
+
+// ── CAPACITOR NATIVE BRIDGE ──────────────────────────────────────────────────
+const NativeBridge = {
+  isNative: () => !!(window.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform()),
+
+  async haptic(style = 'light') {
+    if (!this.isNative()) return;
+    try { await Capacitor.Plugins.Haptics.impact({ style: style.toUpperCase() }); } catch(e) {}
+  },
+
+  async setStatusBar(dark = true) {
+    if (!this.isNative()) return;
+    try {
+      const { StatusBar } = Capacitor.Plugins;
+      await StatusBar.setBackgroundColor({ color: '#0a0e17' });
+      await StatusBar.setStyle({ style: dark ? 'DARK' : 'LIGHT' });
+    } catch(e) {}
+  },
+
+  async copyToClipboard(text) {
+    if (this.isNative()) {
+      try { await Capacitor.Plugins.Clipboard.write({ string: text }); return; } catch(e) {}
+    }
+    try { await navigator.clipboard.writeText(text); } catch(e) {}
+  },
+
+  async share(title, text, url) {
+    if (this.isNative()) {
+      try { await Capacitor.Plugins.Share.share({ title, text, url }); return; } catch(e) {}
+    }
+    if (navigator.share) { await navigator.share({ title, text, url }); }
+  }
+};
+
+// ── OTA UPDATE MANAGER ───────────────────────────────────────────────────────
+const OTAUpdater = {
+  VERSION_KEY: 'nw_app_version',
+  UPDATE_URL_KEY: 'nw_update_url',
+  DEFAULT_UPDATE_URL: 'http://localhost:8642/api/update/version',
+
+  getUpdateUrl() {
+    return localStorage.getItem(this.UPDATE_URL_KEY) || this.DEFAULT_UPDATE_URL;
+  },
+
+  getCurrentVersion() {
+    return localStorage.getItem(this.VERSION_KEY) || 'bundled';
+  },
+
+  async checkAndUpdate(silent = true) {
+    const url = this.getUpdateUrl();
+    try {
+      const resp = await Promise.race([
+        fetch(url, { cache: 'no-store' }),
+        new Promise((_, r) => setTimeout(() => r(new Error('timeout')), 8000))
+      ]);
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const { version, url: appUrl } = await resp.json();
+
+      if (version === this.getCurrentVersion()) {
+        if (!silent) this.showToast('Already up to date (' + version + ')');
+        return false;
+      }
+
+      if (!silent) this.showToast('Downloading update ' + version + '...');
+      const base = url.replace(/\/api\/update\/version.*$/, '');
+      const fullAppUrl = appUrl.startsWith('http') ? appUrl : base + appUrl;
+
+      const htmlResp = await fetch(fullAppUrl + '?_=' + Date.now());
+      if (!htmlResp.ok) throw new Error('Download failed');
+      const html = await htmlResp.text();
+
+      if (NativeBridge.isNative() && Capacitor.Plugins.Filesystem) {
+        const b64 = btoa(unescape(encodeURIComponent(html)));
+        await Capacitor.Plugins.Filesystem.writeFile({
+          path: 'nw_update.html',
+          data: b64,
+          directory: 'DOCUMENTS',
+          recursive: true
+        });
+      } else {
+        try { sessionStorage.setItem('nw_pending_update_html', html); } catch(e) {}
+      }
+
+      localStorage.setItem(this.VERSION_KEY, version);
+      this.showToast('Update ready! Reloading in 2s...');
+      setTimeout(() => location.reload(), 2000);
+      return true;
+    } catch(e) {
+      if (!silent) this.showToast('Update check failed: ' + e.message);
+      return false;
+    }
+  },
+
+  showToast(msg) {
+    let t = document.getElementById('ota-toast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'ota-toast';
+      t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);' +
+        'background:rgba(0,255,157,0.15);border:1px solid #00ff9d;color:#00ff9d;' +
+        'padding:10px 20px;border-radius:8px;font-family:monospace;font-size:13px;' +
+        'z-index:9999;max-width:90vw;text-align:center;backdrop-filter:blur(10px);' +
+        'transition:opacity 0.5s;';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.opacity = '1';
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => { t.style.opacity = '0'; }, 4000);
+  }
+};
+
+// ── SYNC MANAGER ─────────────────────────────────────────────────────────────
+const SyncManager = {
+  SYNC_URL_KEY: 'nw_sync_url',
+  LAST_SYNC_KEY: 'nw_last_sync',
+  DEFAULT_SYNC_URL: 'http://localhost:8642/api/sync',
+
+  getSyncUrl() {
+    return localStorage.getItem(this.SYNC_URL_KEY) || this.DEFAULT_SYNC_URL;
+  },
+
+  collectState() {
+    const state = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith('nw_')) state[k] = localStorage.getItem(k);
+    }
+    return state;
+  },
+
+  applyState(state) {
+    for (const [k, v] of Object.entries(state)) {
+      if (k.startsWith('nw_')) localStorage.setItem(k, v);
+    }
+  },
+
+  async push() {
+    const url = this.getSyncUrl();
+    const payload = {
+      version: Date.now(),
+      device: navigator.userAgent.includes('Android') ? 'android' : 'desktop',
+      data: this.collectState()
+    };
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!resp.ok) throw new Error('Sync push failed');
+    localStorage.setItem(this.LAST_SYNC_KEY, new Date().toISOString());
+    OTAUpdater.showToast('Synced to server ✓');
+  },
+
+  async pull() {
+    const url = this.getSyncUrl();
+    const resp = await fetch(url, { cache: 'no-store' });
+    if (!resp.ok) throw new Error('Sync pull failed');
+    const { data, version } = await resp.json();
+    if (data && Object.keys(data).length > 0) {
+      this.applyState(data);
+      localStorage.setItem(this.LAST_SYNC_KEY, new Date().toISOString());
+      OTAUpdater.showToast('Pulled sync from server ✓');
+      return true;
+    }
+    return false;
+  }
+};
+
+// ─── INIT ────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  loadConfig();
+  switchTab('nexus');
+
+  // PWA install prompt
+  window.addEventListener('beforeinstallprompt',e=>{
+    e.preventDefault();STATE.deferredInstall=e;
+    const btn=document.getElementById('btn-install');
+    if(btn){btn.style.display='flex';}
+  });
+  window.addEventListener('appinstalled',()=>{
+    const btn=document.getElementById('btn-install');
+    if(btn) btn.style.display='none';
+    nexusLog('NORTHWOODS installed as PWA');
+  });
+
+  // Service worker
+  if('serviceWorker' in navigator){
+    const sw=`
+self.addEventListener('install',e=>self.skipWaiting());
+self.addEventListener('activate',e=>e.waitUntil(clients.claim()));
+self.addEventListener('fetch',e=>{
+  if(e.request.url.includes('localhost')||e.request.url.includes('11434')||e.request.url.includes('8642'))return;
+  e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>new Response('Offline'))));
+});
+    `;
+    const blob=new Blob([sw],{type:'application/javascript'});
+    const url=URL.createObjectURL(blob);
+    navigator.serviceWorker.register(url).catch(()=>{});
+  }
+
+  // Clock
+  function updateClock(){
+    const now=new Date();
+    const hh=String(now.getHours()).padStart(2,'0');
+    const mm=String(now.getMinutes()).padStart(2,'0');
+    const ss=String(now.getSeconds()).padStart(2,'0');
+    const el=document.getElementById('nexus-time');
+    if(el) el.textContent=`${hh}:${mm}:${ss}`;
+  }
+  updateClock(); setInterval(updateClock,1000);
+
+  // Hermes status
+  async function checkHermes(){
+    try{
+      const r=await fetch('http://localhost:8642/api/status',{signal:AbortSignal.timeout(2000)});
+      if(r.ok){
+        const d=await r.json();
+        const el=document.getElementById('nexus-hermes-status');
+        if(el){el.textContent='ACTIVE';el.style.color='var(--teal)';}
+        const sub=document.getElementById('active-model-sub');
+        if(sub) sub.textContent=`Hermes: ${d.model||'hermes3'} | Ollama: ${d.ollama_running?'UP':'DOWN'}`;
+      }
+    }catch{
+      const el=document.getElementById('nexus-hermes-status');
+      if(el){el.textContent='OFFLINE';el.style.color='var(--text-dim)';}
+    }
+  }
+  checkHermes(); setInterval(checkHermes,10000);
+
+  nexusLog('NORTHWOODS Mobile v3.0 initialized');
+  nexusLog('AI: Ollama/Hermes3 (local-first)');
+  nexusLog('Ready. Configure API keys in Config tab for cloud models.');
+
+  // ── Native & OTA setup ──────────────────────────────────────
+  NativeBridge.setStatusBar(true);
+  setTimeout(() => OTAUpdater.checkAndUpdate(true), 3000);
+  SyncManager.pull().catch(() => {});
+});
+
+function manToggle(hdr) {
+  const sec = hdr.closest('.man-section');
+  sec.classList.toggle('open');
+}
+function manualFilter(q) {
+  const term = q.toLowerCase().trim();
+  document.querySelectorAll('.man-section').forEach(sec => {
+    const keywords = (sec.dataset.keywords || '') + ' ' + sec.textContent;
+    sec.style.display = (!term || keywords.toLowerCase().includes(term)) ? '' : 'none';
+    if (term) sec.classList.add('open');
+    else if (!term) sec.classList.remove('open');
+  });
+}
+
+</script>
+</body>
+</html>

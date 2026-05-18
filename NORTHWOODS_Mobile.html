@@ -1873,10 +1873,35 @@ const NativeBridge = {
 const OTAUpdater = {
   VERSION_KEY: 'nw_app_version',
   UPDATE_URL_KEY: 'nw_update_url',
-  DEFAULT_UPDATE_URL: 'http://localhost:8642/api/update/version',
+  DEFAULT_UPDATE_URL: 'https://darkhavenrituals-cpu.github.io/northwoods-app/version.json',
 
   getUpdateUrl() {
     return localStorage.getItem(this.UPDATE_URL_KEY) || this.DEFAULT_UPDATE_URL;
+  },
+
+  async getAllUpdateUrls() {
+    const urls = [];
+    // 1. User-configured (textarea, one per line)
+    const stored = localStorage.getItem('nw_update_urls');
+    if (stored) urls.push(...stored.split('\n').map(u=>u.trim()).filter(Boolean));
+    // 2. Single legacy field
+    const single = localStorage.getItem(this.UPDATE_URL_KEY);
+    if (single && !urls.includes(single)) urls.push(single);
+    // 3. GitHub Pages (always try)
+    const gh = 'https://darkhavenrituals-cpu.github.io/northwoods-app/version.json';
+    if (!urls.includes(gh)) urls.push(gh);
+    // 4. Previously discovered tunnel URLs
+    try {
+      const disc = JSON.parse(localStorage.getItem('nw_discovered_urls') || '{}');
+      for (const u of Object.values(disc)) {
+        const v = u.replace(/\/?$/, '/api/update/version');
+        if (!urls.includes(v)) urls.push(v);
+      }
+    } catch(e) {}
+    // 5. Localhost last
+    if (!urls.includes('http://localhost:8642/api/update/version'))
+      urls.push('http://localhost:8642/api/update/version');
+    return urls;
   },
 
   getCurrentVersion() {
@@ -1884,7 +1909,8 @@ const OTAUpdater = {
   },
 
   async checkAndUpdate(silent = true) {
-    const url = this.getUpdateUrl();
+    const urls = await this.getAllUpdateUrls();
+    const url = urls[0];
     try {
       const resp = await Promise.race([
         fetch(url, { cache: 'no-store' }),
